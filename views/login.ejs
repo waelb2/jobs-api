@@ -1,0 +1,75 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <form id="myForm">
+      <div
+        class="flash-section"
+        style="background-color: aquamarine; color: black"
+      ></div>
+      <label for="email">Email: </label> <br />
+      <input id="email" name="email" type="text" autocomplete="on" />
+      <br />
+      <label for="password">Password: </label> <br />
+      <input id="password" name="password" type="password" autocomplete="off" />
+      <button type="submit">login</button>
+    </form>
+    <h1 class="verificationText"></h1>
+    <div id="jobs"></div>
+  </body>
+  <script>
+    let flashSection = document.querySelector('.flash-section')
+    const flashMessage = localStorage.getItem('flashMessage')
+    flashSection.textContent = flashMessage || ''
+    localStorage.removeItem('flashMessage')
+    const myForm = document.querySelector('#myForm')
+
+    myForm.addEventListener('submit', async e => {
+      e.preventDefault()
+
+      let email = myForm.email.value
+      let password = myForm.password.value
+      try {
+        const loginPostResponse = await fetch('login', {
+          method: 'Post',
+          body: JSON.stringify({ email, password }),
+          headers: { 'content-type': 'application/json' }
+        })
+        let data = await loginPostResponse.json()
+        if (loginPostResponse.ok) {
+          const token = data.token
+          const userName = data?.user?.name
+          const verified = data?.user?.verified
+          name.textContent = userName || 'Not Found'
+          let verificationText = document.querySelector('.verificationText')
+          verificationText.textContent = verified
+            ? 'verified'
+            : `You should verify your account${userName}`
+          localStorage.setItem('token', token)
+
+          const loginGetResponse = await fetch('/api/v1/jobs', {
+            method: 'Get',
+            headers: {
+              authorization: `Bearer ${token}`,
+              'content-type': 'application/json'
+            }
+          })
+
+          const responseBody = await loginGetResponse.json()
+          let jobsOutput = document.querySelector('#jobs')
+          const jobs = responseBody.jobs
+          jobsOutput.textContent = jobs.map(job => {
+            return (document.createElement('div').textContent = job.company)
+          })
+        } else {
+          window.location.href = '/api/v1/auth/login'
+        }
+      } catch (err) {
+        console.log(err)
+      }
+    })
+  </script>
+</html>

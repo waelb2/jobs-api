@@ -1,0 +1,33 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <h1>OTP Verification</h1>
+    <form id="myForm">
+      <label for="otp">OTP</label>
+      <input type="text" id="otp" name="otp" />
+      <button type="submit">verify</button>
+    </form>
+  </body>
+  <script>
+    const myForm = document.getElementById('myForm')
+    myForm.addEventListener('submit', async e => {
+      e.preventDefault()
+      let otp = myForm.otp.value
+      try {
+        const otpPostData = await fetch('/api/v1/auth/user-verification', {
+          method: 'Post',
+          body: JSON.stringify({ OTP: otp }),
+          headers: { 'content-type': 'application/json' }
+        })
+        const data = await otpPostData.json()
+        window.location.href = '/api/v1/auth/login'
+      } catch (err) {
+        console.log(err)
+      }
+    })
+  </script>
+</html>
